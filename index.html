@@ -22,6 +22,7 @@
         justify-content: center;
         align-items: center;
         padding: 0 15%;
+        flex-direction: column-reverse;
       }
       .side-panel {
         flex: 1;
@@ -88,6 +89,20 @@
         font-weight: 700;
         animation: floatFade 2s linear forwards;
       }
+
+      .side-panel {
+        width: 100%;
+        padding: 0 0 50px 0;
+      }
+
+      .game {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
       @keyframes floatFade {
         0% {
           opacity: 1;
@@ -95,6 +110,22 @@
         100% {
           opacity: 0;
           transform: translateY(-50px);
+        }
+      }
+
+      @media (min-width: 768px) {
+        .main-content {
+          flex-direction: row;
+        }
+      }
+      @media (min-width: 768px) {
+        .side-panel {
+          flex: 1;
+          padding-right: 50px;
+        }
+
+        .game {
+          flex: 2;
         }
       }
     </style>
