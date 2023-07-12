@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Number Game</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #212121;
+        color: #ffffff;
+        font-family: "Roboto", sans-serif;
+      }
+      .main-content {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0 15%;
+      }
+      .side-panel {
+        flex: 1;
+        padding-right: 50px;
+      }
+      .card {
+        background-color: #424242;
+        padding: 20px;
+        min-width: 100%;
+        border-radius: 5px;
+      }
+      .form-group {
+        color: #ffffff;
+      }
+      .form-control,
+      .form-control:focus {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        color: #ffffff;
+      }
+      .game {
+        flex: 2;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      #number {
+        font-size: 96px;
+        color: #4caf50;
+        font-weight: 900;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        margin-bottom: 50px;
+      }
+      .btn-group {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+      .btn {
+        width: 100px;
+        margin: 0 5px;
+      }
+      .btn-selected,
+      .btn-selected:hover {
+        background-color: #4caf50;
+      }
+      .balance {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: #424242;
+        padding: 20px;
+        border-radius: 5px;
+        color: #ffffff;
+        z-index: 1;
+      }
+      .balance-change {
+        z-index: 2;
+        position: absolute;
+        top: 50px;
+        right: 30px;
+        font-size: 20px;
+        font-weight: 700;
+        animation: floatFade 2s linear forwards;
+      }
+      @keyframes floatFade {
+        0% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-50px);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="balance">
+      <span>Balance: </span>
+      <span id="balance">0</span>
+      <span> USD</span>
+    </div>
+    <div class="main-content">
+      <div class="side-panel">
+        <div class="card">
+          <div class="form-group">
+            <label for="bet-amount">Bet Amount (USD)</label>
+            <input
+              type="number"
+              id="bet-amount"
+              class="form-control"
+              value="0"
+              oninput="checkSubmitButton()"
+            />
+          </div>
+          <div class="form-group">
+            <label for="difficulty">Difficulty</label>
+            <select id="difficulty" class="form-control">
+              <option>Easy</option>
+              <option>Medium</option>
+              <option>Hard</option>
+            </select>
+          </div>
+          <button
+            type="button"
+            class="btn btn-primary"
+            onclick="submitData()"
+            style="font-weight: 500; margin-top: 10px"
+            id="submit-button"
+            disabled
+          >
+            BET
+          </button>
+        </div>
+      </div>
+      <div class="game">
+        <div id="number">0</div>
+        <div class="btn-group" role="group">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            onclick="buttonClicked(this)"
+          >
+            1-20
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            onclick="buttonClicked(this)"
+          >
+            21-40
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            onclick="buttonClicked(this)"
+          >
+            41-60
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            onclick="buttonClicked(this)"
+          >
+            61-80
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            onclick="buttonClicked(this)"
+          >
+            81-100
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let balance = 1000;
+      let selectedRanges = [];
+
+      function animateNumber(finalNumber, startNumber, duration = 500) {
+        let currentNumber = startNumber;
+        let stepTime = Math.abs(
+          Math.floor(duration / (finalNumber - startNumber))
+        );
+
+        let timer = setInterval(() => {
+          document.getElementById("number").innerText = currentNumber;
+          if (currentNumber == finalNumber) {
+            clearInterval(timer);
+          }
+          if (finalNumber > currentNumber) {
+            currentNumber++;
+          } else {
+            currentNumber--;
+          }
+        }, stepTime);
+      }
+
+      let previousNumber = 0;
+      function generateNumber() {
+        let randomNumber = Math.floor(Math.random() * 100) + 1;
+        animateNumber(randomNumber, previousNumber);
+        previousNumber = randomNumber;
+
+        let betAmount = document.getElementById("bet-amount").value;
+        for (let range of selectedRanges) {
+          let [start, end] = range.split("-").map(Number);
+          if (randomNumber >= start && randomNumber <= end) {
+            balance += betAmount * 3.8;
+            document.getElementById("balance").innerText = balance.toFixed(2);
+            showBalanceChange(betAmount * 3.8, true);
+            break;
+          } else {
+            showBalanceChange(betAmount, false);
+          }
+        }
+      }
+
+      function buttonClicked(button) {
+        document.querySelectorAll(".btn-selected").forEach((btn) => {
+          btn.classList.remove("btn-selected");
+        });
+        button.classList.add("btn-selected");
+        selectedRanges = [button.innerText];
+        checkSubmitButton();
+      }
+
+      function submitData() {
+        betAmount = parseFloat(document.getElementById("bet-amount").value);
+        let difficulty = document.getElementById("difficulty").value;
+        if (betAmount <= 0 || selectedRanges.length === 0) {
+          return;
+        }
+        console.log(`Bet Amount: ${betAmount}, Difficulty: ${difficulty}`);
+
+        balance = balance - betAmount;
+        document.getElementById("balance").innerText = balance.toFixed(2);
+        generateNumber();
+      }
+
+      function showBalanceChange(amount, isWin) {
+        let balanceChange = document.createElement("div");
+        balanceChange.classList.add("balance-change");
+        balanceChange.style.color = isWin ? "green" : "red";
+        balanceChange.innerText = `${isWin ? "+" : "-"}${amount} USD`;
+        document.body.appendChild(balanceChange);
+
+        setTimeout(() => {
+          document.body.removeChild(balanceChange);
+        }, 2000);
+      }
+
+      function checkSubmitButton() {
+        let betAmount = parseFloat(document.getElementById("bet-amount").value);
+        let submitButton = document.getElementById("submit-button");
+        if (betAmount > 0 && selectedRanges.length > 0) {
+          submitButton.disabled = false;
+        } else {
+          submitButton.disabled = true;
+        }
+      }
+
+      document.getElementById("balance").innerText = balance.toFixed(2);
+    </script>
+  </body>
+</html>
